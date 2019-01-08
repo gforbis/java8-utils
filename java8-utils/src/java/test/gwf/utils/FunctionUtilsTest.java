@@ -10,19 +10,21 @@ import org.junit.jupiter.api.Test;
 import gwf.utils.FunctionUtils;
 
 class FunctionUtilsTest {
+    private static final Integer FIRST = 5;
+    private static final Integer SECOND = 3;
+    private static final Integer SUM = 8;
+    private static final BiFunction<Integer,Integer,Integer> FN_SUM = (A,B) -> A + B;
 
     @Test
     void testCurryFirst() {
-        BiFunction<Integer,Integer,Integer> uncurried = (A, B) -> A + B;
-        Function<Integer, Integer> curried = FunctionUtils.curryFirst(uncurried).apply(Integer.valueOf(5));
-        assertTrue(Integer.valueOf(8).equals(curried.apply(Integer.valueOf(3))));
+       Function<Integer, Integer> curried = FunctionUtils.curryFirst(FN_SUM).apply(FIRST);
+        assertTrue(SUM.equals(curried.apply(Integer.valueOf(SECOND))));
     }
 
     @Test
     void testCurrySecond() {
-        BiFunction<Integer,Integer,Integer> uncurried = (A, B) -> A + B;
-        Function<Integer, Integer> curried = FunctionUtils.currySecond(uncurried).apply(Integer.valueOf(3));
-        assertTrue(Integer.valueOf(8).equals(curried.apply(Integer.valueOf(5))));
+        Function<Integer, Integer> curried = FunctionUtils.currySecond(FN_SUM).apply(SECOND);
+        assertTrue(SUM.equals(curried.apply(FIRST)));
     }
 
 }
