@@ -1,4 +1,4 @@
 /**
- * This is more intended to be a repository of knowledge and techniques than an actual useful utility library.
+ * This is intended to be a repository of knowledge and techniques rather than a dependency.
  */
 package gwf.utils;

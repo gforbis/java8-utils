@@ -7,7 +7,7 @@ import java.util.function.Function;
 
 import org.junit.jupiter.api.Test;
 
-import gwf.utils.FunctionUtils;
+import gwf.utils.functions.FunctionUtils;
 
 class FunctionUtilsTest {
     private static final Integer FIRST = 5;

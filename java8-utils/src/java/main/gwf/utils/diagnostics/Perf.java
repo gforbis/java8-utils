@@ -1,16 +1,10 @@
-/*
- * Copyright (c) 2019 BTS-IT, Inc. All Rights Reserved.
- * The source code for this program is not published or otherwise divested of 
- * its trade secrets, irrespective of what has been deposited with the U.S. 
- * Copyright Office.
- */
-package gwf.utils;
+package gwf.utils.diagnostics;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class Perf {
     private static final Logger LOG = LogManager.getLogger(Perf.class);
