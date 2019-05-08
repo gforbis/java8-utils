@@ -1,6 +1,7 @@
 package gwf.utils.listener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -22,7 +23,7 @@ import org.apache.logging.log4j.Logger;
 public class ListenerManager<T, U> {
     private static final Logger LOG = LogManager.getLogger(ListenerManager.class);
 
-    private Map<T, List<Listener<U>>> listeners;
+    private final Map<T, List<Listener<U>>> listeners = new HashMap<>();
 
     private final U eventObject;
 
