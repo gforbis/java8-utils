@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -23,7 +24,7 @@ import org.apache.logging.log4j.Logger;
 public class ListenerManager<T, U> {
     private static final Logger LOG = LogManager.getLogger(ListenerManager.class);
 
-    private final Map<T, List<Listener<U>>> listeners = new HashMap<>();
+    private final Map<T, List<Consumer<U>>> listeners = new HashMap<>();
 
     private final U eventObject;
 
@@ -33,9 +34,9 @@ public class ListenerManager<T, U> {
 
     public void notify(T event) {
         RuntimeException ex = null;
-        for (Listener<U> listener : getListeners(event)) {
+        for (Consumer<U> listener : getListeners(event)) {
             try {
-                listener.handle(eventObject);
+                listener.accept(eventObject);
             }
             catch (Exception e) {
                 LOG.error("Event handling exception: " + e.toString(), e);
@@ -54,22 +55,22 @@ public class ListenerManager<T, U> {
         }
     }
 
-    public void addListener(T event, Listener<U> listener) {
+    public void addListener(T event, Consumer<U> listener) {
         getListeners(event).add(listener);
     }
 
-    public void removeListener(T event, Listener<U> listener) {
+    public void removeListener(T event, Consumer<U> listener) {
         getListeners(event).remove(listener);
     }
 
-    public void removeListener(Listener<U> listener) {
+    public void removeListener(Consumer<U> listener) {
         for (T key : listeners.keySet()) {
             removeListener(key, listener);
         }
     }
 
-    private List<Listener<U>> getListeners(T event) {
-        List<Listener<U>> eventListeners = listeners.get(Objects.requireNonNull(event));
+    private List<Consumer<U>> getListeners(T event) {
+        List<Consumer<U>> eventListeners = listeners.get(Objects.requireNonNull(event));
         if (null == eventListeners) {
             eventListeners = new ArrayList<>();
             listeners.put(event, eventListeners);
