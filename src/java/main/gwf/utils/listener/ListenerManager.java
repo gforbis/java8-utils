@@ -7,9 +7,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 /**
  * Class ListenerManager<br>
  * Description: This class ListenerManager is a container for managing Listeners. It
@@ -22,8 +19,6 @@ import org.apache.logging.log4j.Logger;
  * @author gforbis created at May 8, 2019
  */
 public class ListenerManager<T, U> {
-    private static final Logger LOG = LogManager.getLogger(ListenerManager.class);
-
     private final Map<T, List<Consumer<U>>> listeners = new HashMap<>();
 
     private final U eventObject;
@@ -39,7 +34,6 @@ public class ListenerManager<T, U> {
                 listener.accept(eventObject);
             }
             catch (Exception e) {
-                LOG.error("Event handling exception: " + e.toString(), e);
                 if (null == ex) {
                     if (e instanceof RuntimeException) {
                         ex = (RuntimeException) e;
