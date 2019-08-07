@@ -7,8 +7,7 @@
 package gwf.functional;
 
 import java.util.Objects;
-import java.util.OptionalLong;
-import java.util.function.Predicate;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
@@ -18,66 +17,64 @@ import java.util.function.Supplier;
  */
 public class Eval<T> implements Supplier<T> {
     /**
-     * The original supplier
+     * The supplier delegate that populates the cache.
      */
-    private final Supplier<T> supplier;
-    /**
-     * The number of milliseconds to cache the value (forever if empty)
-     */
-    private final OptionalLong duration;
-    /**
-     * Logic to invalidate cache. Very fast if no duration.
-     */
-    private Predicate<Eval<T>> isInvalid = e -> true; // always invalid before the first execution
-    /**
-     * null or cached value
-     */
-    private T deferred = null;
+    private final Supplier<T> delegate;
 
+    /**
+     * The result. If null, the supplier delegate will be called to refresh the cached
+     * value. If the supplier returns null, the cached value will be an
+     * Optional.empty();
+     */
+    private Optional<T> deferred = null;
+
+    /**
+     * Private constructor to use the static defer method for clarity.
+     * @param supplier
+     */
     private Eval(Supplier<T> supplier) {
-        this.supplier = supplier;
-        this.duration = OptionalLong.empty();
+        this.delegate = supplier;
     }
-    
-    private Eval(Supplier<T> supplier, long duration) {
-        this.supplier = supplier;
-        this.duration = OptionalLong.of(duration);
-    }
-    
+
+    /**
+     * The first time this is called, caches the result from the provided Supplier.
+     * Afterward returns the cached result. Should be thread-safe.
+     */
     @Override
     public T get() {
-        if (isInvalid.test(this)) {
-            deferred = supplier.get();
-            if (duration.isPresent()) {
-                final long expiry = System.currentTimeMillis() + duration.getAsLong();
-                isInvalid = e -> System.currentTimeMillis() >  expiry;
-            } else {
-                isInvalid = e -> false; // Cache never invalidates
+        if (null == deferred) {
+            synchronized (Eval.class) {
+                if (null == deferred) {
+                    deferred = Optional.ofNullable(delegate.get());
+                }
             }
         }
-        return deferred;
+        return deferred.orElse(null);
+    }
+    
+    /**
+     * Invalidates the cache and updates it from the underlying supplier on the next get.
+     */
+    private Eval<T> invalidate() {
+        deferred = null;
+        return this;
     }
 
     /**
-     * A Supplier that lazily evaluates the supplier the first time the value is requested, and thereafter returns the cached value.
+     * A Supplier that lazily evaluates the supplier the first time the value is
+     * requested, and thereafter returns the cached value. Detects if the supplier is an
+     * instance of Eval and returns the provided instance instead of wrapping it.<br>
+     * <br>
+     * Re-deferring an Eval will invalidate the cache.
+     * 
      * @param supplier
      * @return
      */
     public static <T> Supplier<T> defer(Supplier<T> supplier) {
-        return new Eval<T>(Objects.requireNonNull(supplier));
-    }
-
-    /**
-     * A Supplier that lazily evaluates the supplier any time the cached value is invalid. If the duration is less than 1, the provided supplier is returned to perform an uncached lookup.
-     * @param supplier
-     * @param durationMillis
-     * @return
-     */
-    public static <T> Supplier<T> defer(Supplier<T> supplier, long durationMillis) {
-        if (durationMillis > 0) {
-            return new Eval<T>(Objects.requireNonNull(supplier), durationMillis);
+        if (Eval.class.isAssignableFrom(supplier.getClass())) {
+            return ((Eval<T>)supplier).invalidate();
         } else {
-            return Objects.requireNonNull(supplier);
+            return new Eval<T>(Objects.requireNonNull(supplier));
         }
     }
 }
